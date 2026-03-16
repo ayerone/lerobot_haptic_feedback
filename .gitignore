@@ -10,4 +10,4 @@ src/lerobot_haptic_feedback.egg-info/
 src/record_with_feedback/__pycache__/
 
 src/so_sensor_arm/ARCHIVE/
-src/so_sensor_arm/lerobot_so_sensor_arm/__pycache__/
+src/so_sensor_arm/lerobot_robot_so_sensor_arm/__pycache__/
