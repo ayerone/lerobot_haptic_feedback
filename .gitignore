@@ -1,0 +1,13 @@
+
+ARCHIVE/
+
+src/feedback_leader/ARCHIVE/
+src/feedback_leader/lerobot_teleoperator_feedback_leader/__pycache__
+src/feedback_leader/lerobot_teleoperator_feedback_leader/ARCHIVE/
+
+src/lerobot_haptic_feedback.egg-info/
+
+src/record_with_feedback/__pycache__/
+
+src/so_sensor_arm/ARCHIVE/
+src/so_sensor_arm/lerobot_so_sensor_arm/__pycache__/
