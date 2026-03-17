@@ -39,3 +39,10 @@ pip install -e .
 
 ## Use
 I have copied the script from lerobot-record into this project's src/record_with_feedback/\_\_main\_\_.py (and made the one-line modification), and you can run this using the script at examples/record_with_feedback.sh after installing this repo in your lerobot virtual env.
+
+## Results
+TODO
+
+## Details
+At the time of writing (March 2026), I am using lerobot 0.4.4 with python 3.10.19
+I put lerobot>=0.4.3 in pyproject.toml, somewhat arbitrarily, and you can probably roll that back if you need to.

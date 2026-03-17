@@ -429,10 +429,7 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
         else cfg.display_compressed_images
     )
 
-    # AARON
-    # robot = LogsplitterFollower(cfg.robot)
     robot = make_robot_from_config(cfg.robot)
-
 
     teleop = make_teleoperator_from_config(cfg.teleop) if cfg.teleop is not None else None
 
@@ -453,11 +450,8 @@ def record(cfg: RecordConfig) -> LeRobotDataset:
         ),
     )
 
-    # AARON
+    # logging.info(dataset_features)
     # from pprint import pprint
-
-    logging.info("AARON")
-    logging.info(dataset_features)
     # pprint(dataset_features)
 
     dataset = None
