@@ -45,4 +45,5 @@ TODO
 
 ## Details
 At the time of writing (March 2026), I am using lerobot 0.4.4 with python 3.10.19
+
 I put lerobot>=0.4.3 in pyproject.toml, somewhat arbitrarily, and you can probably roll that back if you need to.
