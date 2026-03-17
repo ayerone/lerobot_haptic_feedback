@@ -6,8 +6,7 @@ Force feeback during teleoperation allows the operator to use appropriate grippi
 
 ## Method
 A force sensor is added to the end effector of the robot, and a brushless "gimbal" motor is used as the final joint of the leader to provide force feedback to the operator.
-![force sensor and gimbal motor](images/pressure_sensor.jpg)
-![gimbal motor](images/gimbal_motor.jpg)
+![force sensor and gimbal motor](images/sensor_and_motor.jpg)
 The force sensor's readings are included in the robot's observation state. The lerobot-teleoperate and lerobot-record loops are (minimally) modified to provide feedback from the robot to the teleoperator (via the leader's send_feedback() method).
 
 ## Software Integration
