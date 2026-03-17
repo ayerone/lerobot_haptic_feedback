@@ -128,7 +128,7 @@ class FeedbackLeader(SO101Leader):
         #
         # sensor to torque feedback
         if feedback["sensor.force"] > 5:
-            return self.feedback_motor.write(-feedback["sensor.force"]/100)
+            return self.feedback_motor.write(-feedback["sensor.force"]/200)
         error = self._gimbal_position - feedback["gripper.pos"]
         if error > self.TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD:
             return self.feedback_motor.write(0.01 * error)
