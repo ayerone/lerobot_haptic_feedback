@@ -28,8 +28,8 @@ teleop.send_feedback(obs)
 A class is created to handle the sensor (ForceSensor), and another class to handle the feedback motor (FeedbackMotor), and each is managed by its respective arm.
 
 ## Hardware / Architecture
-![leader and follower and arduinos connected to the computer](images/feedback_teleop_hardware_setup.png)
 The leader and the follower each get a companion microcontroller (I used arduino Uno's). The Uno's are each attached to the computer (that runs lerobot) by a com port over USB. The modified lerobot code sends serial commands to the Uno's to read state (sensor readings and gimbal motor angles), and, for the feedback motor, also to write torques.
+![leader and follower and arduinos connected to the computer](images/feedback_teleop_hardware_setup.png)
 
 ## Install
 Clone this repo. cd into it. Ensure your lerobot virtual env is activated, and:
