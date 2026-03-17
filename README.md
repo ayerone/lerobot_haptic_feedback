@@ -24,7 +24,32 @@ Conveniently, LeRobot ecosystem automatically detects new robots and teleoperato
 ```python
 teleop.send_feedback(obs)
 ```
+This functionality was contemplated by the LeRobot team. If you look at lerobot/teleoperators/so_leader/so_leader.py, you can see:
+```python
+def send_feedback(self, feedback: dict[str, float]) -> None:
+    # TODO: Implement force feedback
+    raise NotImplementedError
+```
+And my implementation is quite simple:
+```python
+def send_feedback(self, feedback: dict[str, float]):
+        '''
+        When gripping an object, force reported by the robot is scaled by
+        GRIP_FEEDBACK_SCALAR (a property of this class, FeedbackLeader) to
+        determine torque exerted by the feedback motor on the teleop.
 
+        When the teleop gripper control  is significantly more "open" (greater angle)
+        than the robot's, a simulated spring constant acts to decrease the
+        feedback motor's angle (i.e. in the direction of closing).
+        '''
+
+        if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
+            return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
+        error = self._gimbal_position - feedback["gripper.pos"]
+        if error > self.TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD:
+            return self.feedback_motor.write(self.JAW_OPEN_SCALAR * error)
+        return self.feedback_motor.write(0)
+```
 A class is created to handle the sensor (ForceSensor), and another class to handle the feedback motor (FeedbackMotor), and each is managed by its respective arm.
 
 ## Hardware / Architecture
@@ -32,18 +57,29 @@ The leader and the follower each get a companion microcontroller (I used arduino
 ![leader and follower and arduinos connected to the computer](images/feedback_teleop_hardware_setup.png)
 
 ## Install
+New robot and teleoperator embodiments must be installed in your lerobot virtual environment following specific naming conventions for lerobot to recognize them.  The following will install lerobot_robot_so_sensor_arm and lerobot_teleoperator_feedback_leader in editable mode so you can modify the code.
+
 Clone this repo. cd into it. Ensure your lerobot virtual env is activated, and:
 ```shell
 pip install -e .
 ```
 
 ## Use
-I have copied the script from lerobot-record into this project's src/record_with_feedback/\_\_main\_\_.py (and made the one-line modification), and you can run this using the script at examples/record_with_feedback.sh after installing this repo in your lerobot virtual env.
+I have copied the script from lerobot-record into this project's example/reference directory (and made the one-line modification). To run it, cd into the examples direcoty and run
+```shell
+bash record_with_feedback.sh
+```
+*Note:* If, during setup testing, you run lerobot-record again with the same *dataset.repo-id*, LeRobot will error and crash, complaining that file already exists at ~/.cache/huggingface/lerobot/huggingface-user/repo_name, and you just have to delete that file to get going again.
 
 ## Results
 TODO
 
-## Details
+## More
+When manipulating rigid objects, the force sensor can come on quite strong when contact is made, and tends to jump up to near the top of its range. This was causing the feedback motor to bounce back right after gripping an object, causing the robot's jaw to open. While this presents an interesting engineering challenge to solve in software, I found that the easiest way to resolve the issue is by adding some compliant material in the gripper. I placed a small piece of compressible foam on the side of the jaw opposite the sensor, and this helps quite a bit. There are also  designs for compliant jaws that get printed from flexible material:<br>
+https://github.com/TheRobotStudio/SO-ARM100?tab=readme-ov-file#6-compliant-gripper<br> https://www.gauravmanek.com/blog/2025/fin-ray-gripper/<br>
+and let's just say that's on my wish list. 
+
+## Small Notes
 At the time of writing (March 2026), I am using lerobot 0.4.4 with python 3.10.19
 
 I put lerobot>=0.4.3 in pyproject.toml, somewhat arbitrarily, and you can probably roll that back if you need to.
