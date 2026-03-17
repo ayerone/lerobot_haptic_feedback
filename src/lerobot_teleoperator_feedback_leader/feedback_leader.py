@@ -16,7 +16,11 @@ from lerobot.utils.constants import HF_LEROBOT_CALIBRATION, TELEOPERATORS
 class FeedbackLeader(SO101Leader):
     config_class = FeedbackLeaderConfig
     name = "feedback_leader"
+
+    SENSOR_DEADBAND_THRESHOLD = 0
+    GRIP_FEEDBACK_SCALAR = 1 / 200
     TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD = 15
+    JAW_OPEN_SCALAR = 0.01
 
     def __init__(self, config: FeedbackLeaderConfig):
         super().__init__(config)
@@ -106,11 +110,18 @@ class FeedbackLeader(SO101Leader):
     @check_if_not_connected
     def get_action(self) -> dict[str: float]:
         so_action = super().get_action()
+
+        # Re: sending angle commands to robot's gripper,
+        # we will clip at a max value, set in FeedbackMotor.
+        # I did this to get more resolution out of the feedback motor,
+        # since super wide jaw opening is typically not used. This way,
+        # a full turn of the feedback motor is mapped to a smaller range
+        # in robot actions.
         self._gimbal_position = self.feedback_motor.read()
-        to_send = self._gimbal_position
-        if to_send > 42:
-            to_send = 42
+        max_angle = self.feedback_motor.robot_jaw_max_angle
+        to_send = min(self._gimbal_position, max_angle)
         so_action["gripper.pos"] = to_send
+
         return so_action
         # return { 
         #     **super().get_action(),
@@ -119,6 +130,15 @@ class FeedbackLeader(SO101Leader):
 
     @check_if_not_connected
     def send_feedback(self, feedback: dict[str, float]):
+        '''
+        When gripping an object, force reported by the robot is scaled by
+        GRIP_FEEDBACK_SCALAR (a property of this class, FeedbackLeader) to
+        determine torque exerted by the feedback motor.
+
+        When the teleop gripper is significantly more "open" (greater angle)
+        than the robot's, a simulated spring constant acts to decrease the
+        feedback motor's angle (i.e. in the direction of closing).
+        '''
         # position feedback:
         # return self.feedback_motor.write(feedback["gimbal.pos"]);
         #
@@ -127,11 +147,11 @@ class FeedbackLeader(SO101Leader):
         # return self.feedback_motor.write(error/10);
         #
         # sensor to torque feedback
-        if feedback["sensor.force"] > 5:
-            return self.feedback_motor.write(-feedback["sensor.force"]/200)
+        if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
+            return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
         error = self._gimbal_position - feedback["gripper.pos"]
         if error > self.TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD:
-            return self.feedback_motor.write(0.01 * error)
+            return self.feedback_motor.write(self.JAW_OPEN_SCALAR * error)
         return self.feedback_motor.write(0)
     
     @check_if_not_connected

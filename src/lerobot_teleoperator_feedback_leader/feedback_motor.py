@@ -25,10 +25,11 @@ class GimbalCalibration:
 class FeedbackMotor():
     name = "feedback_motor"
 
-    def __init__(self, port: str, calibration: GimbalCalibration|None=None):
+    def __init__(self, port: str, calibration: GimbalCalibration|None = None, robot_jaw_max_angle: float = 50):
         self.port = port
         if calibration:
             self.calibration = calibration
+        self.robot_jaw_max_angle = robot_jaw_max_angle
         return
 
     def __repr__(self):
@@ -155,7 +156,7 @@ class FeedbackMotor():
         scaled = self.scale_number(
             encoder_value,
             self.calibration.range_max, self.calibration.range_min,
-            0, 42
+            0, self.robot_jaw_max_angle
         )
         # return clip(scaled, 0, 42).item()
         return scaled
@@ -163,7 +164,7 @@ class FeedbackMotor():
     def convert_100_to_encoder(self, percent_value):
         return self.scale_number(
             percent_value,
-            0, 42,
+            0, self.robot_jaw_max_angle,
             self.calibration.range_max, self.calibration.range_min
         )
         # return interp(
@@ -181,7 +182,7 @@ class FeedbackMotor():
     def write(self, gimbal_pos) -> None:
         # to_send = self.convert_100_to_encoder(gimbal_pos)
         to_send = gimbal_pos
-        if abs(to_send) < 0.0000001:
+        if abs(to_send) < 0.0000001: # avoid sending scientific notation for small numbers that the arduino won't understand
             to_send = 0.0
         return self.send_receive( float(to_send) )
         
