@@ -24,7 +24,7 @@ Conveniently, LeRobot ecosystem automatically detects new robots and teleoperato
 ```python
 teleop.send_feedback(obs)
 ```
-I have copied the code from lerobot-record into this project's src/record_with_feedback/__main__.py (and made the one-line modification), and you can run this using the script at examples/record_with_feedback.sh after installing this repo in your lerobot virtual env.
+I have copied the code from lerobot-record into this project's src/record_with_feedback/\_\_main\_\_.py (and made the one-line modification), and you can run this using the script at examples/record_with_feedback.sh after installing this repo in your lerobot virtual env.
 
 
 A class is created to handle the sensor (ForceSensor), and another class to handle the feedback motor (FeedbackMotor), and each is managed by its respective arm.
