@@ -152,11 +152,15 @@ class FeedbackLeader(SO101Leader):
 
         # TODO:
         # try adding a derivative term to damp quick motion
+
+        # During gripping
         if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
             return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
+        # During jaw wide open
         error = self._gimbal_position - feedback["gripper.pos"]
         if error > self.TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD:
             return self.feedback_motor.write(self.JAW_OPEN_SCALAR * error)
+        # Gripper in normal range & not touching anything
         return self.feedback_motor.write(0)
     
     @check_if_not_connected

@@ -45,11 +45,14 @@ def send_feedback(self, feedback: dict[str, float]):
         robot's gripper, a simulated spring (with displacement "error") acts
         to push the feedback motor toward the gripper "closed" position.
         '''
+        # During gripping
         if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
             return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
+        # During jaw wide open
         error = self._gimbal_position - feedback["gripper.pos"]
         if error > self.TELEOP_EFFECTOR_TOO_OPEN_THRESHOLD:
             return self.feedback_motor.write(self.JAW_OPEN_SCALAR * error)
+        # Gripper in normal range & not touching anything
         return self.feedback_motor.write(0)
 ```
 A class is created to handle the sensor (ForceSensor), and another class to handle the feedback motor (FeedbackMotor), and each is managed by its respective arm.
