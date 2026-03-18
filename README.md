@@ -1,6 +1,6 @@
 # Force Feedback for LeRobot SO-101 teleoperator
 ![SO-101 robot with sensor installed in gripper](images/gripper_with_sensor-fs8.png)
-This project extends the SO-101 Leader (teleoperator) / Follower (robot) by adding haptic feedback at the gripper joint. Without feedback, operators tend to squeeze too hard when manipulating objects. These teleoperator actions then enter the training dataset and are imitated during inference.
+This project extends the SO-101 Leader (teleoperator) / Follower (robot) by adding haptic feedback at the gripper joint. Without feedback, operators tend to squeeze too hard when manipulating objects. These teleoperator actions then enter the training dataset and are imitated during policy inference.
 
 Force feeback during teleoperation allows the operator to use appropriate gripping force, thereby avoiding dropping objects (too little force) or damaging delicate objects and causing excess stress and heat in the robot's gripper motor (too much force).
 
@@ -20,7 +20,8 @@ class FeedbackLeader(SO101Leader):
         return { **super().action_features, "gimbal.pos": float }
     ...
 ```
-Conveniently, LeRobot ecosystem automatically detects new robots and teleoperators installed in your python enviornment, as long as certain naming conventions are followed (https://huggingface.co/docs/lerobot/en/integrate_hardware). This makes it easy to use LeRobot's scripts like lerobot-record to create training datasets, to train a policy, and then to run inference on that policy on the modified hardware. The script lerobot-record requires just one added statement to send the robot's observation back to the leader as feedback:
+Conveniently, LeRobot ecosystem automatically detects new robots and teleoperators installed in your python enviornment, as long as certain naming conventions are followed (https://huggingface.co/docs/lerobot/en/integrate_hardware).<br>
+This makes it easy to use LeRobot's scripts like lerobot-record to create training datasets, to train a policy, and then to run inference on that policy on the modified hardware. The script lerobot-record requires just one added statement to send the robot's observation back to the leader as feedback:
 ```python
 teleop.send_feedback(obs)
 ```
@@ -38,11 +39,12 @@ def send_feedback(self, feedback: dict[str, float]):
         GRIP_FEEDBACK_SCALAR (a property of this class, FeedbackLeader) to
         determine torque exerted by the feedback motor on the teleop.
 
-        When the teleop gripper control  is significantly more "open" (greater angle)
-        than the robot's, a simulated spring constant acts to decrease the
-        feedback motor's angle (i.e. in the direction of closing).
+        The gimbal motor has continuous rotation. To indicate the "fully open"
+        position to the operator:
+        when the teleop gripper control is significantly more open than the
+        robot's gripper, a simulated spring (with displacement "error") acts
+        to push the feedback motor toward the gripper "closed" position.
         '''
-
         if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
             return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
         error = self._gimbal_position - feedback["gripper.pos"]

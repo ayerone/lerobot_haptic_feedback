@@ -133,11 +133,13 @@ class FeedbackLeader(SO101Leader):
         '''
         When gripping an object, force reported by the robot is scaled by
         GRIP_FEEDBACK_SCALAR (a property of this class, FeedbackLeader) to
-        determine torque exerted by the feedback motor.
+        determine torque exerted by the feedback motor on the teleop.
 
-        When the teleop gripper is significantly more "open" (greater angle)
-        than the robot's, a simulated spring constant acts to decrease the
-        feedback motor's angle (i.e. in the direction of closing).
+        The gimbal motor has continuous rotation. To indicate the "fully open"
+        position to the operator:
+        when the teleop gripper control is significantly more open than the
+        robot's gripper, a simulated spring (with displacement "error") acts
+        to push the feedback motor toward the gripper "closed" position.
         '''
         # position feedback:
         # return self.feedback_motor.write(feedback["gimbal.pos"]);
@@ -147,6 +149,9 @@ class FeedbackLeader(SO101Leader):
         # return self.feedback_motor.write(error/10);
         #
         # sensor to torque feedback
+
+        # TODO:
+        # try adding a derivative term to damp quick motion
         if feedback["sensor.force"] > self.SENSOR_DEADBAND_THRESHOLD:
             return self.feedback_motor.write(- self.GRIP_FEEDBACK_SCALAR * feedback["sensor.force"])
         error = self._gimbal_position - feedback["gripper.pos"]
